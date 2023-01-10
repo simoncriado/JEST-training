@@ -1,5 +1,5 @@
 class Room {
-  constructor(name, bookings, rate, discount) {
+  constructor({ name, bookings, rate, discount }) {
     this.name = name;
     this.bookings = bookings;
     this.rate = rate;
@@ -10,67 +10,106 @@ class Room {
     this.bookings = bookings;
   }
 
+  // Returns an array of dates between start date and end date
   getDatesInRange(start, end) {
     let range = [];
-    let startDate = new Date(start);
-    let endDate = new Date(end);
+    let startDate = start;
 
-    while (startDate <= endDate) {
+    while (startDate <= end) {
       range = [...range, startDate.toISOString().slice(0, 10)];
       startDate.setDate(startDate.getDate() + 1);
     }
     return range;
   }
 
+  // Is occupied if given date is between the booking check in and check out
   isOccupied(date) {
-    const targetDate = new Date(date);
-    let occupied = false;
-
-    this.bookings.forEach((b) => {
-      const checkIn = new Date(b.checkIn);
-      const checkOut = new Date(b.checkOut);
-      if (checkIn <= targetDate && checkOut >= targetDate) {
-        occupied = true;
+    for (let i = 0; i < this.bookings.length; i++) {
+      if (
+        date >= this.bookings[i].checkIn &&
+        date <= this.bookings[i].checkOut
+      ) {
+        return true;
       }
-    });
-
-    return occupied;
+    }
+    return false;
   }
 
+  // Checks for each date between the dates range if the current room is occupied. Then calculates the percentage
   occupancyPercentage(start, end) {
     const range = this.getDatesInRange(start, end);
-    let numOccupied = 0;
-
+    let occupiedDates = 0;
     range.forEach((date) => {
-      if (this.isOccupied(date) !== false) {
-        return (numOccupied += 1);
+      if (this.isOccupied(new Date(date)) !== false) {
+        return (occupiedDates += 1);
       }
     });
-    const totalPercentage = (numOccupied * 100) / range.length;
+    const totalPercentage = (occupiedDates * 100) / range.length;
     return totalPercentage;
   }
+
+  // Check which room is completely occupied in the dates range. Then calculates the percentage based on the total amount of bookings
+  static totalOccupancyPercentage = (rooms, startDate, endDate) => {
+    let bookingsBetweenRange = 0;
+    let bookingsCount = 0;
+
+    rooms.forEach((room) => {
+      room.bookings.forEach((booking) => {
+        bookingsCount++;
+        if (
+          booking.checkIn.getTime() >= startDate.getTime() &&
+          booking.checkOut.getTime() < endDate.getTime()
+        ) {
+          bookingsBetweenRange++;
+        }
+      });
+    });
+
+    return (bookingsBetweenRange * 100) / bookingsCount;
+  };
+
+  static availableRooms = (rooms, startDate, endDate) => {
+    let availableRoomsArray = [];
+
+    rooms.forEach((room) => {
+      let roomIsOccupied = false;
+      room.bookings.forEach((booking) => {
+        if (
+          booking.checkIn.getTime() < startDate.getTime() &&
+          booking.checkOut.getTime() < startDate.getTime()
+        ) {
+          roomIsOccupied = false;
+        } else if (
+          booking.checkIn.getTime() > endDate.getTime() &&
+          booking.checkOut.getTime() < endDate.getTime()
+        ) {
+          roomIsOccupied = false;
+        } else {
+          roomIsOccupied = true;
+        }
+      });
+      roomIsOccupied === false && !availableRoomsArray.includes(room)
+        ? availableRoomsArray.push(room)
+        : null;
+    });
+
+    return availableRoomsArray;
+  };
 }
 
 class Booking {
-  constructor(name, email, checkIn, checkOut, discount, room) {
+  constructor({ name, email, checkIn, checkOut, discount }) {
     this.name = name;
     this.email = email;
     this.checkIn = checkIn;
     this.checkOut = checkOut;
     this.discount = discount;
-    this.room = room;
   }
 
-  getFee = () => {
-    const roomprice = this.room.rate;
-    const roomdiscount = this.room.discount;
-    const bookingdiscount = this.discount;
-
-    return (
-      (((roomprice * (100 - roomdiscount)) / 100) * (100 - bookingdiscount)) /
-      100
-    );
-  };
+  getFee(room) {
+    let rateRoom = room.rate - (room.rate * room.discount) / 100;
+    return rateRoom - (rateRoom * this.discount) / 100;
+  }
 }
 
 module.exports = { Room, Booking };

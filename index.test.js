@@ -1,102 +1,264 @@
 const { Room, Booking } = require("./index");
 
-// General tests
-// test("Returns 4 dates when date range is 12.12.2022 to 15.12.2022", () => {
-//   const room = new Room("Suite", [], 6500, 15);
-
-//   const startDate = "12/12/2022";
-//   const endDate = "12/12/2022";
-//   const expected = ["2022-12-12", "2022-12-13", "2022-12-14"];
-
-//   expect(room.getDatesInRange(startDate, endDate)).toBe(expected);
-// });
-
-// Occupancy tests
-test("Is not occupied when no bookings array provided or length 0", () => {
-  const room = new Room("Suite", [], 6500, 15);
-  expect(room.isOccupied("2023-01-05")).toBe(false);
-});
-
+// OCCUPIED OR NOT TESTS
 test("Is NOT occupied in the given date", () => {
-  const room = new Room("Suite", [], 6500, 15);
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-12"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-24"),
+    checkOut: new Date("2022-12-26"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
 
-  const BookingOne = new Booking(
-    "Test1",
-    "test1@gmail.com",
-    "2022-12-11",
-    "2022-12-12",
-    50,
-    room
-  );
-  const BookingTwo = new Booking(
-    "Test2",
-    "test2@gmail.com",
-    "2022-12-05",
-    "2022-12-08",
-    15,
-    room
-  );
-  const BookingThree = new Booking(
-    "Test3",
-    "test3@gmail.com",
-    "2022-12-24",
-    "2022-12-129",
-    70,
-    room
-  );
-
-  room.setBookings([BookingOne, BookingTwo, BookingThree]);
-
-  expect(room.isOccupied("2022-12-13")).toBe(false);
+  expect(room.isOccupied(new Date("2022-12-06"))).toBe(false);
 });
 
 test("IS occupied in the given date", () => {
-  const room = new Room("Suite", [], 6500, 15);
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-12"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-24"),
+    checkOut: new Date("2022-12-26"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
 
-  const BookingOne = new Booking(
-    "Test1",
-    "test1@gmail.com",
-    "2022-11-13",
-    "2022-11-14",
-    50,
-    room
-  );
-  const BookingTwo = new Booking(
-    "Test2",
-    "test2@gmail.com",
-    "2022-11-05",
-    "2022-11-08",
-    15,
-    room
-  );
-
-  room.setBookings([BookingOne, BookingTwo]);
-
-  expect(room.isOccupied("2022-11-13")).toBe(true);
+  expect(room.isOccupied(new Date("2022-12-26"))).toBe(true);
 });
 
-// Occupancy percentage tests
-test("Percentage occupancy", () => {
-  const room = new Room("Suite", [], 6500, 15);
+// OCCUPANCY PERCENTAGE TESTS
+test("Percentage occupancy to be 50%", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-13"),
+    checkOut: new Date("2022-12-14"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
 
-  const BookingOne = new Booking(
-    "Test1",
-    "test1@gmail.com",
-    "2022-11-12",
-    "2022-11-12",
-    50,
-    room
-  );
-  const BookingTwo = new Booking(
-    "Test2",
-    "test2@gmail.com",
-    "2022-11-13",
-    "2022-11-13",
-    15,
-    room
-  );
+  expect(
+    room.occupancyPercentage(new Date("2022-12-11"), new Date("2022-12-16"))
+  ).toBe(50);
+});
 
-  room.setBookings([BookingOne, BookingTwo]);
+test("Total occupancy percentage to be 75%", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-07"),
+    checkOut: new Date("2022-12-14"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
 
-  expect(room.occupancyPercentage("2022-11-12", "2022-11-15")).toBe(50);
+  const bookingTemplateThree = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-15"),
+    discount: 15,
+  });
+  const bookingTemplateFour = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-12"),
+    discount: 15,
+  });
+  const roomTwo = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateThree, bookingTemplateFour],
+    rate: 6500,
+    discount: 15,
+  });
+  const Rooms = [room, roomTwo];
+
+  expect(
+    Room.totalOccupancyPercentage(
+      Rooms,
+      new Date("2022-12-11"),
+      new Date("2022-12-16")
+    )
+  ).toBe(75);
+});
+
+test("RoomTwo is 100% available between given dates", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-07"),
+    checkOut: new Date("2022-12-14"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
+  const bookingTemplateThree = new Booking({
+    name: "Test3",
+    email: "test3@gmail.com",
+    checkIn: new Date("2022-12-05"),
+    checkOut: new Date("2022-12-06"),
+    discount: 15,
+  });
+  const bookingTemplateFour = new Booking({
+    name: "Test4",
+    email: "test4@gmail.com",
+    checkIn: new Date("2022-12-02"),
+    checkOut: new Date("2022-12-03"),
+    discount: 15,
+  });
+  const roomTwo = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateThree, bookingTemplateFour],
+    rate: 6500,
+    discount: 15,
+  });
+  const Rooms = [room, roomTwo];
+
+  expect(
+    Room.availableRooms(Rooms, new Date("2022-12-11"), new Date("2022-12-16"))
+  ).toStrictEqual([roomTwo]);
+});
+
+test("No room is 100% available between given dates", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 15,
+  });
+  const bookingTemplateTwo = new Booking({
+    name: "Test2",
+    email: "test2@gmail.com",
+    checkIn: new Date("2022-12-07"),
+    checkOut: new Date("2022-12-14"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne, bookingTemplateTwo],
+    rate: 6500,
+    discount: 15,
+  });
+  const bookingTemplateThree = new Booking({
+    name: "Test3",
+    email: "test3@gmail.com",
+    checkIn: new Date("2022-12-05"),
+    checkOut: new Date("2022-12-06"),
+    discount: 15,
+  });
+  const bookingTemplateFour = new Booking({
+    name: "Test4",
+    email: "test4@gmail.com",
+    checkIn: new Date("2022-12-02"),
+    checkOut: new Date("2022-12-12"),
+    discount: 15,
+  });
+  const roomTwo = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateThree, bookingTemplateFour],
+    rate: 6500,
+    discount: 15,
+  });
+  const Rooms = [room, roomTwo];
+
+  expect(
+    Room.availableRooms(Rooms, new Date("2022-12-11"), new Date("2022-12-16"))
+  ).toStrictEqual([]);
+});
+
+// FEES TESTS
+test("Get booking fee", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 15,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne],
+    rate: 6500,
+    discount: 15,
+  });
+  expect(bookingTemplateOne.getFee(room)).toBe(4696.25);
+});
+
+test("Get booking fee", () => {
+  const bookingTemplateOne = new Booking({
+    name: "Test1",
+    email: "test1@gmail.com",
+    checkIn: new Date("2022-12-11"),
+    checkOut: new Date("2022-12-11"),
+    discount: 5,
+  });
+  const room = new Room({
+    name: "Suite",
+    bookings: [bookingTemplateOne],
+    rate: 5000,
+    discount: 20,
+  });
+  expect(bookingTemplateOne.getFee(room)).toBe(3800);
 });
